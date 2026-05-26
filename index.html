@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="喝水清單">
+<meta name="theme-color" content="#E1F5EE">
+<title>每日喝水清單</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --teal:#1D9E75;--teal-light:#E1F5EE;--teal-dark:#0F6E56;--teal-mid:#5DCAA5;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --bg:#f7f9f8;--card:#fff;--border:#e5ebe8;
+  --radius:16px;--radius-sm:10px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+h1{font-size:22px;font-weight:700;}
+h2{font-size:16px;font-weight:700;}
+p{line-height:1.5;}
+
+.header{background:var(--teal-light);padding:52px 20px 20px;border-bottom:1px solid #c8ead9;}
+.header-row{display:flex;align-items:flex-start;justify-content:space-between;}
+.date{font-size:13px;color:var(--teal-dark);margin-top:4px;}
+.reset-btn{font-size:13px;font-weight:500;color:var(--teal-dark);background:transparent;border:1px solid var(--teal-mid);border-radius:99px;padding:6px 14px;cursor:pointer;}
+
+.section{margin:16px 16px 0;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
+.section-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.section-header h2{color:var(--text);}
+
+.calc-body{padding:14px 16px;}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.row label{font-size:13px;color:var(--text2);min-width:32px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:99px;background:#d0e8dc;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--teal);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.val{font-size:14px;font-weight:700;color:var(--text);min-width:54px;text-align:right;}
+
+.size-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.size-btn{font-size:12px;font-weight:500;padding:5px 10px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;}
+.size-btn.active{background:var(--teal-light);border-color:var(--teal-mid);color:var(--teal-dark);}
+.custom-wrap{display:flex;align-items:center;gap:4px;}
+.custom-wrap input{width:62px;font-size:13px;font-family:inherit;padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);}
+.custom-wrap span{font-size:12px;color:var(--text3);}
+
+.mode-row{display:flex;gap:8px;margin-bottom:14px;}
+.mode-btn{flex:1;font-size:13px;font-weight:600;font-family:inherit;padding:9px 0;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;}
+.mode-btn.active{background:var(--teal-light);border-color:var(--teal-mid);color:var(--teal-dark);}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.result-card{background:var(--bg);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.result-card .label{font-size:11px;color:var(--text3);margin-bottom:5px;}
+.result-card .number{font-size:20px;font-weight:700;color:var(--text);}
+.result-card .unit{font-size:12px;font-weight:400;color:var(--text3);}
+.result-card .sub{font-size:11px;color:var(--teal-dark);margin-top:3px;}
+
+.apply-btn{width:100%;font-size:14px;font-weight:600;font-family:inherit;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;}
+
+.cups-control{padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.adj-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg);font-size:20px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;font-weight:300;}
+.cups-center{flex:1;text-align:center;}
+.cups-big{font-size:32px;font-weight:700;color:var(--text);}
+.cups-ml{font-size:13px;color:var(--text3);margin-top:2px;}
+
+.cup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px;}
+.cup-btn{aspect-ratio:1;border-radius:14px;border:1px solid var(--border);background:var(--card);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .15s;-webkit-transition:all .15s;}
+.cup-btn.done{background:var(--teal-light);border-color:var(--teal-mid);}
+.cup-icon{font-size:26px;transition:transform .15s;}
+.cup-btn.done .cup-icon{transform:scale(1.1);}
+.cup-label{font-size:11px;font-weight:500;color:var(--text3);}
+.cup-btn.done .cup-label{color:var(--teal-dark);}
+
+.progress-box{padding:14px 16px;}
+.prog-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;}
+.prog-left .prog-count{font-size:26px;font-weight:700;color:var(--text);}
+.prog-left .prog-sub{font-size:13px;color:var(--text3);}
+.prog-right{text-align:right;}
+.prog-right .ml-done{font-size:22px;font-weight:700;color:var(--text);}
+.prog-right .ml-sub{font-size:12px;color:var(--text3);}
+.bar-wrap{background:var(--bg);border-radius:99px;height:10px;overflow:hidden;border:1px solid var(--border);}
+.bar-fill{height:100%;border-radius:99px;background:var(--teal);transition:width .4s ease;}
+.prog-note{font-size:11px;color:var(--text3);text-align:right;margin-top:6px;}
+
+.time-item{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);}
+.time-item:last-child{border-bottom:none;}
+.time-left{display:flex;align-items:center;gap:10px;}
+.time-icon{font-size:18px;}
+.time-val{font-size:14px;font-weight:600;color:var(--text);}
+.time-name{font-size:12px;color:var(--text3);}
+.check-circle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.check-circle.done{background:var(--teal);border-color:var(--teal);}
+.check-circle .tick{font-size:13px;color:#fff;display:none;}
+.check-circle.done .tick{display:block;}
+
+.friends-section{margin:16px 16px 0;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
+.friends-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.friends-header h2{display:flex;align-items:center;gap:8px;}
+.room-badge{font-size:11px;background:var(--teal-light);color:var(--teal-dark);padding:4px 10px;border-radius:99px;border:1px solid var(--teal-mid);font-weight:600;}
+
+.room-setup{padding:14px 16px;border-bottom:1px solid var(--border);}
+.room-setup p{font-size:13px;color:var(--text2);margin-bottom:10px;}
+.input-field{width:100%;font-size:14px;font-family:inherit;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);margin-bottom:8px;}
+.input-field:focus{outline:none;border-color:var(--teal-mid);}
+.room-btn-row{display:flex;gap:8px;}
+.room-btn{flex:1;font-size:13px;font-weight:600;font-family:inherit;padding:9px 0;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;}
+.room-btn.primary{background:var(--teal-light);border-color:var(--teal-mid);color:var(--teal-dark);}
+.join-wrap{flex:1;display:flex;gap:6px;}
+.join-wrap input{flex:1;font-size:13px;font-family:inherit;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);text-transform:uppercase;}
+.join-wrap input:focus{outline:none;border-color:var(--teal-mid);}
+.err{font-size:12px;color:#E24B4A;margin-top:6px;min-height:16px;}
+
+.room-info{padding:14px 16px;border-bottom:1px solid var(--border);display:none;}
+.room-info-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.room-info-label{font-size:12px;color:var(--text3);}
+.leave-btn{font-size:12px;color:var(--text3);background:transparent;border:none;cursor:pointer;font-family:inherit;}
+.code-row{display:flex;align-items:center;gap:12px;}
+.code-display{font-size:26px;font-weight:700;letter-spacing:5px;color:var(--text);}
+.copy-btn{font-size:12px;font-weight:600;font-family:inherit;padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;}
+
+.friend-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.friend-item:last-child{border-bottom:none;}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.friend-info{flex:1;min-width:0;}
+.friend-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.friend-name{font-size:14px;font-weight:600;color:var(--text);}
+.friend-stat{font-size:12px;color:var(--text3);}
+.mini-dots{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px;}
+.mini-dot{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--border);}
+.mini-dot.done{border:none;}
+.friend-bar-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden;}
+.friend-bar{height:100%;border-radius:99px;transition:width .3s;}
+.remove-btn{background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:4px;flex-shrink:0;}
+
+.add-row{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-top:1px solid var(--border);}
+.add-circle{width:38px;height:38px;border-radius:50%;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text3);flex-shrink:0;}
+.add-label{font-size:13px;color:var(--text3);}
+
+.add-form{padding:14px 16px;border-top:1px solid var(--border);display:none;}
+.add-form p{font-size:13px;color:var(--text2);margin-bottom:10px;}
+.add-inputs{display:flex;gap:6px;margin-bottom:8px;}
+.add-inputs input{font-size:13px;font-family:inherit;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);}
+.add-inputs input:focus{outline:none;border-color:var(--teal-mid);}
+.add-inputs .inp-name{flex:2;}
+.add-inputs .inp-small{flex:1;}
+.add-friend-btn{width:100%;font-size:14px;font-weight:600;font-family:inherit;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;}
+
+.motivate{text-align:center;font-size:13px;color:var(--text3);padding:16px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>今日喝水紀錄 💧</h1>
+      <p class="date" id="date-label"></p>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">重置</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header"><h2>每日喝水量快速試算</h2></div>
+  <div class="calc-body">
+    <div class="row">
+      <label>體重</label>
+      <input type="range" min="30" max="150" value="60" step="1" id="weight-slider" oninput="onWeightChange()">
+      <span class="val" id="weight-out">60 kg</span>
+    </div>
+    <div class="size-row">
+      <label style="font-size:13px;color:var(--text2);min-width:32px;">杯量</label>
+      <button class="size-btn" data-size="150" onclick="setCupSize(150)">150</button>
+      <button class="size-btn" data-size="200" onclick="setCupSize(200)">200</button>
+      <button class="size-btn active" data-size="250" onclick="setCupSize(250)">250</button>
+      <button class="size-btn" data-size="350" onclick="setCupSize(350)">350</button>
+      <button class="size-btn" data-size="500" onclick="setCupSize(500)">500</button>
+      <div class="custom-wrap">
+        <input type="number" id="custom-size" min="50" max="2000" placeholder="自訂" oninput="onCustomSize()">
+        <span>ml</span>
+      </div>
+    </div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="btn-base" onclick="setMode('base')">基礎保養期</button>
+      <button class="mode-btn" id="btn-diet" onclick="setMode('diet')">減脂 / 運動期</button>
+    </div>
+    <div class="result-grid" id="result-cards"></div>
+    <button class="apply-btn" id="apply-btn" onclick="applyTarget()">套用建議杯數到清單 ↗</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="cups-control">
+    <button class="adj-btn" onclick="adjustCups(-1)">−</button>
+    <div class="cups-center">
+      <div class="cups-big"><span id="manual-cups">8</span> 杯</div>
+      <div class="cups-ml">= <span id="manual-ml">2000</span> ml／天・每杯 <span id="cup-badge">250</span> ml</div>
+    </div>
+    <button class="adj-btn" onclick="adjustCups(1)">+</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="cup-grid" id="cup-grid"></div>
+</div>
+
+<div class="section">
+  <div class="progress-box">
+    <div class="prog-row">
+      <div class="prog-left">
+        <div class="prog-count"><span id="count">0</span> <span style="font-size:16px;font-weight:400;color:var(--text3);">/ <span id="total-label">8</span> 杯</span></div>
+        <div class="prog-sub">今日進度</div>
+      </div>
+      <div class="prog-right">
+        <div class="ml-done"><span id="ml-done">0</span> <span style="font-size:14px;font-weight:400;color:var(--text3);">ml</span></div>
+        <div class="ml-sub">目標 <span id="ml-goal">2000</span> ml・每杯 <span id="cup-size-label">250</span> ml</div>
+      </div>
+    </div>
+    <div class="bar-wrap"><div class="bar-fill" id="progress-bar" style="width:0%"></div></div>
+    <p class="motivate" id="motivate" style="padding:8px 0 0;text-align:left;"></p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header"><h2>建議喝水時間 ⏰</h2></div>
+  <div id="time-list"></div>
+</div>
+
+<div class="friends-section">
+  <div class="friends-header">
+    <h2>👥 好友喝水監視</h2>
+    <span class="room-badge" id="room-badge">未加入房間</span>
+  </div>
+
+  <div class="room-setup" id="room-setup">
+    <p>設定你的名字，再建立或加入房間</p>
+    <input class="input-field" id="my-name" type="text" placeholder="你的名字" maxlength="12">
+    <div class="room-btn-row">
+      <button class="room-btn primary" onclick="createRoom()">建立新房間</button>
+      <div class="join-wrap">
+        <input id="join-code" type="text" placeholder="房間代碼" maxlength="6">
+        <button class="room-btn" onclick="joinRoom()">加入</button>
+      </div>
+    </div>
+    <p class="err" id="room-error"></p>
+  </div>
+
+  <div class="room-info" id="room-info">
+    <div class="room-info-row">
+      <span class="room-info-label">房間代碼（分享給朋友）</span>
+      <button class="leave-btn" onclick="leaveRoom()">離開房間</button>
+    </div>
+    <div class="code-row">
+      <span class="code-display" id="room-code-display">------</span>
+      <button class="copy-btn" onclick="copyCode()">📋 複製</button>
+    </div>
+  </div>
+
+  <div id="friends-list"></div>
+
+  <div class="add-row" onclick="toggleAddForm()">
+    <div class="add-circle">+</div>
+    <span class="add-label">手動新增好友進度</span>
+  </div>
+
+  <div class="add-form" id="add-form">
+    <p>新增好友（不需要房間）</p>
+    <div class="add-inputs">
+      <input class="inp-name" id="f-name" type="text" placeholder="好友名字" maxlength="12">
+      <input class="inp-small" id="f-done" type="number" min="0" max="20" placeholder="杯數">
+      <input class="inp-small" id="f-total" type="number" min="1" max="20" placeholder="目標">
+    </div>
+    <button class="add-friend-btn" onclick="addFriendManual()">新增好友</button>
+  </div>
+</div>
+
+<div class="motivate" id="bottom-note" style="padding-bottom:30px;"></div>
+
+<script>
+let mode='base', cupSize=250, totalCups=8;
+let checked=new Array(8).fill(false);
+let roomCode=null, myName='', myId=null, friends=[], pollTimer=null;
+
+const COLORS=['#534AB7','#D85A30','#D4537E','#BA7517','#378ADD','#639922','#E24B4A','#888780'];
+const BGS=['#EEEDFE','#FAECE7','#FBEAF0','#FAEEDA','#E6F1FB','#EAF3DE','#FCEBEB','#F1EFE8'];
+const allTimes=['07:00','08:30','09:30','10:30','11:30','13:00','14:00','15:00','16:00','17:30','19:00','20:30','21:30','22:00','22:30','23:00'];
+const allLabels=['起床後','早餐後','上午工作','上午補水','午餐前','午餐後','下午開始','下午茶','下午補水','下班前','晚餐後','睡前一小時','準備睡覺','睡前','睡前','睡前'];
+const msgs=['今天還沒開始，記得補充水分！','不錯的開始，繼續！','快一半了，加油！','已經一半，棒棒！','超過一半，很棒！','快達標了！','再一點！','只差一杯！','太棒了，今天達標！'];
+
+function save(){try{localStorage.setItem('wt_checked',JSON.stringify(checked));localStorage.setItem('wt_cups',totalCups);localStorage.setItem('wt_size',cupSize);}catch(e){}}
+function load(){
+  try{
+    const c=JSON.parse(localStorage.getItem('wt_checked'));
+    const n=parseInt(localStorage.getItem('wt_cups'));
+    const s=parseInt(localStorage.getItem('wt_size'));
+    if(Array.isArray(c)){totalCups=c.length;checked=c;}
+    if(n&&n>0&&n<=16)totalCups=n;
+    if(s&&s>=50&&s<=2000)cupSize=s;
+    checked=Array.isArray(c)&&c.length===totalCups?c:new Array(totalCups).fill(false);
+  }catch(e){}
+}
+
+function refreshUI(){
+  document.getElementById('cup-badge').textContent=cupSize;
+  document.getElementById('cup-size-label').textContent=cupSize;
+  document.getElementById('manual-ml').textContent=totalCups*cupSize;
+  document.getElementById('ml-goal').textContent=totalCups*cupSize;
+  document.getElementById('manual-cups').textContent=totalCups;
+  document.getElementById('total-label').textContent=totalCups;
+}
+
+function setCupSize(sz){
+  cupSize=sz;
+  document.getElementById('custom-size').value='';
+  document.querySelectorAll('.size-btn').forEach(b=>{
+    b.classList.toggle('active',parseInt(b.dataset.size)===sz);
+  });
+  refreshUI();calcWater();renderStats();renderTimes();save();
+}
+function onCustomSize(){
+  const v=parseInt(document.getElementById('custom-size').value);
+  if(v>=50&&v<=2000){
+    cupSize=v;
+    document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));
+    refreshUI();calcWater();renderStats();renderTimes();save();
+  }
+}
+function adjustCups(d){
+  const n=totalCups+d;
+  if(n<1||n>16)return;
+  totalCups=n;
+  if(checked.length<n)while(checked.length<n)checked.push(false);
+  else checked=checked.slice(0,n);
+  refreshUI();renderAll();save();
+}
+function onWeightChange(){
+  document.getElementById('weight-out').textContent=parseInt(document.getElementById('weight-slider').value)+' kg';
+  calcWater();
+}
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-base').classList.toggle('active',m==='base');
+  document.getElementById('btn-diet').classList.toggle('active',m==='diet');
+  calcWater();
+}
+function calcWater(){
+  const w=parseInt(document.getElementById('weight-slider').value);
+  const sz=cupSize, cards=document.getElementById('result-cards');
+  if(mode==='base'){
+    const ml=w*30, cups=Math.round(ml/sz);
+    cards.innerHTML=`<div class="result-card"><div class="label">建議飲水量</div><div class="number">${ml}<span class="unit"> ml</span></div></div><div class="result-card"><div class="label">約需杯數（每杯 ${sz} ml）</div><div class="number">${cups}<span class="unit"> 杯</span></div></div>`;
+    document.getElementById('apply-btn').dataset.cups=cups;
+  }else{
+    const ml35=w*35,ml40=w*40,c35=Math.round(ml35/sz),c40=Math.round(ml40/sz);
+    cards.innerHTML=`<div class="result-card"><div class="label">×35ml 輕度運動</div><div class="number">${ml35}<span class="unit"> ml</span></div><div class="sub">≈ ${c35} 杯</div></div><div class="result-card"><div class="label">×40ml 高強度運動</div><div class="number">${ml40}<span class="unit"> ml</span></div><div class="sub">≈ ${c40} 杯</div></div>`;
+    document.getElementById('apply-btn').dataset.cups=c35+'-'+c40;
+  }
+}
+function applyTarget(){
+  const raw=document.getElementById('apply-btn').dataset.cups||'8';
+  let n=raw.includes('-')?Math.round(raw.split('-').map(Number).reduce((a,b)=>a+b,0)/2):parseInt(raw);
+  n=Math.max(1,Math.min(16,n));
+  totalCups=n;checked=new Array(n).fill(false);
+  refreshUI();renderAll();save();
+}
+
+function renderGrid(){
+  const g=document.getElementById('cup-grid');g.innerHTML='';
+  checked.forEach((done,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cup-btn'+(done?' done':'');
+    btn.setAttribute('aria-label',`第 ${i+1} 杯`);
+    btn.onclick=()=>toggle(i);
+    btn.innerHTML=`<div class="cup-icon">${done?'💧':'🫙'}</div><div class="cup-label">第 ${i+1} 杯</div>`;
+    g.appendChild(btn);
+  });
+}
+function renderStats(){
+  const n=checked.filter(Boolean).length;
+  document.getElementById('count').textContent=n;
+  document.getElementById('total-label').textContent=totalCups;
+  document.getElementById('ml-done').textContent=n*cupSize;
+  document.getElementById('ml-goal').textContent=totalCups*cupSize;
+  document.getElementById('cup-size-label').textContent=cupSize;
+  document.getElementById('progress-bar').style.width=Math.round(n/totalCups*100)+'%';
+  const idx=Math.min(Math.round(n/totalCups*(msgs.length-1)),msgs.length-1);
+  document.getElementById('motivate').textContent=msgs[idx];
+}
+function renderTimes(){
+  const list=document.getElementById('time-list');list.innerHTML='';
+  const count=Math.min(totalCups,allTimes.length);
+  for(let i=0;i<count;i++){
+    const done=checked[i]||false;
+    const div=document.createElement('div');div.className='time-item';
+    div.innerHTML=`<div class="time-left"><div class="time-icon">🕐</div><div><div class="time-val">${allTimes[i]}</div><div class="time-name">${allLabels[i]}・${cupSize} ml</div></div></div><div class="check-circle${done?' done':''}"><span class="tick">✓</span></div>`;
+    list.appendChild(div);
+  }
+}
+function renderAll(){renderGrid();renderStats();renderTimes();}
+function toggle(i){checked[i]=!checked[i];renderAll();save();if(roomCode)pushMyStatus();}
+function resetAll(){checked=new Array(totalCups).fill(false);renderAll();save();if(roomCode)pushMyStatus();}
+
+function getColor(i){return COLORS[i%COLORS.length];}
+function getBg(i){return BGS[i%BGS.length];}
+function initials(n){return n.trim().slice(0,2).toUpperCase()||'?';}
+
+function renderFriends(){
+  const list=document.getElementById('friends-list');list.innerHTML='';
+  friends.forEach((f,idx)=>{
+    const pct=Math.round(f.done/f.total*100);
+    const color=getColor(idx),bg=getBg(idx);
+    const dots=Array.from({length:f.total},(_,i)=>`<div class="mini-dot${i<f.done?' done':''}" style="${i<f.done?'background:'+color+';':''};width:11px;height:11px;"></div>`).join('');
+    const div=document.createElement('div');div.className='friend-item';
+    div.innerHTML=`<div class="avatar" style="background:${bg};color:${color};">${initials(f.name)}</div><div class="friend-info"><div class="friend-name-row"><span class="friend-name">${f.name}</span><span class="friend-stat">${f.done}/${f.total} 杯・${pct}%</span></div><div class="mini-dots">${dots}</div><div class="friend-bar-wrap"><div class="friend-bar" style="width:${pct}%;background:${color};"></div></div></div>${f.isManual?`<button class="remove-btn" onclick="removeFriend(${idx})">×</button>`:''}`;
+    list.appendChild(div);
+  });
+}
+function removeFriend(idx){friends.splice(idx,1);renderFriends();if(roomCode)saveRoomData();}
+function toggleAddForm(){const f=document.getElementById('add-form');f.style.display=f.style.display==='none'||!f.style.display?'block':'none';}
+function addFriendManual(){
+  const name=document.getElementById('f-name').value.trim();
+  const done=parseInt(document.getElementById('f-done').value)||0;
+  const total=parseInt(document.getElementById('f-total').value)||8;
+  if(!name)return;
+  friends.push({name,done,total,isManual:true,id:'m_'+Date.now()});
+  document.getElementById('f-name').value='';document.getElementById('f-done').value='';document.getElementById('f-total').value='';
+  renderFriends();if(roomCode)saveRoomData();
+}
+
+function genCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+function setErr(m){document.getElementById('room-error').textContent=m;}
+
+async function createRoom(){
+  const name=document.getElementById('my-name').value.trim();
+  if(!name){setErr('請先輸入你的名字');return;}
+  myName=name;myId='u_'+Date.now();roomCode=genCode();
+  await saveRoomData();enterRoom();
+}
+async function joinRoom(){
+  const name=document.getElementById('my-name').value.trim();
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if(!name){setErr('請先輸入你的名字');return;}
+  if(code.length<4){setErr('請輸入有效代碼');return;}
+  myName=name;myId='u_'+Date.now();roomCode=code;
+  const data=await loadRoomData();
+  if(!data){setErr('找不到此房間');roomCode=null;return;}
+  friends=data.members.filter(m=>m.id!==myId).map(m=>({...m,isManual:false}));
+  await saveRoomData();enterRoom();
+}
+function enterRoom(){
+  document.getElementById('room-setup').style.display='none';
+  document.getElementById('room-info').style.display='block';
+  document.getElementById('room-code-display').textContent=roomCode;
+  document.getElementById('room-badge').textContent='房間：'+roomCode;
+  renderFriends();startPolling();
+}
+function leaveRoom(){
+  clearInterval(pollTimer);pollTimer=null;roomCode=null;myId=null;myName='';
+  friends=friends.filter(f=>f.isManual);
+  document.getElementById('room-setup').style.display='block';
+  document.getElementById('room-info').style.display='none';
+  document.getElementById('room-badge').textContent='未加入房間';
+  renderFriends();
+}
+function copyCode(){
+  if(navigator.clipboard)navigator.clipboard.writeText(roomCode);
+  const btn=document.querySelector('.copy-btn');
+  btn.textContent='✅ 已複製';setTimeout(()=>{btn.textContent='📋 複製';},1500);
+}
+
+async function saveRoomData(){
+  if(!roomCode||!myId)return;
+  try{
+    const existing=await loadRoomData();
+    let members=existing?existing.members.filter(m=>m.id!==myId):[];
+    members.push({id:myId,name:myName,done:checked.filter(Boolean).length,total:totalCups,ts:Date.now()});
+    localStorage.setItem('room:'+roomCode,JSON.stringify({members,ts:Date.now()}));
+  }catch(e){}
+}
+async function loadRoomData(){
+  try{const r=localStorage.getItem('room:'+roomCode);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+async function pushMyStatus(){await saveRoomData();}
+async function pollRoom(){
+  if(!roomCode||!myId)return;
+  const data=await loadRoomData();if(!data)return;
+  const now=Date.now();
+  const remotes=data.members.filter(m=>m.id!==myId&&(now-m.ts)<86400000);
+  friends=[...friends.filter(f=>f.isManual),...remotes.map(m=>({...m,isManual:false}))];
+  renderFriends();
+}
+function startPolling(){pushMyStatus();if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(pollRoom,8000);}
+
+document.getElementById('date-label').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+load();
+document.getElementById('weight-slider').value=60;
+refreshUI();calcWater();renderAll();renderFriends();
+</script>
+</body>
+</html>
