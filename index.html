@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="喝水清單">
+<meta name="apple-mobile-web-app-title" content="該喝水了喔">
 <meta name="theme-color" content="#E1F5EE">
-<title>每日喝水清單</title>
+<title>親愛的 該喝水了喔</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -155,7 +155,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 <div class="header">
   <div class="header-row">
     <div>
-      <h1>今日喝水紀錄 💧</h1>
+      <h1>親愛的 該喝水了喔 💧</h1>
       <p class="date" id="date-label"></p>
     </div>
     <button class="reset-btn" onclick="resetAll()">重置</button>
@@ -285,8 +285,8 @@ let roomCode=null, myName='', myId=null, friends=[], pollTimer=null;
 
 const COLORS=['#534AB7','#D85A30','#D4537E','#BA7517','#378ADD','#639922','#E24B4A','#888780'];
 const BGS=['#EEEDFE','#FAECE7','#FBEAF0','#FAEEDA','#E6F1FB','#EAF3DE','#FCEBEB','#F1EFE8'];
-const allTimes=['07:00','08:30','09:30','10:30','11:30','13:00','14:00','15:00','16:00','17:30','19:00','20:30','21:30','22:00','22:30','23:00'];
-const allLabels=['起床後','早餐後','上午工作','上午補水','午餐前','午餐後','下午開始','下午茶','下午補水','下班前','晚餐後','睡前一小時','準備睡覺','睡前','睡前','睡前'];
+const allTimes=['07:00','08:30','10:00','11:30','13:00','14:30','16:00','17:30','19:00','20:00','21:00','22:00','22:30','23:00','23:15','23:30'];
+const allLabels=['起床後','早餐後','上午補水','午餐前','午餐後','下午補水','下午茶','傍晚','晚餐後','晚間補水','睡前兩小時','睡前一小時','準備睡覺','睡前','睡前','睡前'];
 const msgs=['今天還沒開始，記得補充水分！','不錯的開始，繼續！','快一半了，加油！','已經一半，棒棒！','超過一半，很棒！','快達標了！','再一點！','只差一杯！','太棒了，今天達標！'];
 
 function save(){try{localStorage.setItem('wt_checked',JSON.stringify(checked));localStorage.setItem('wt_cups',totalCups);localStorage.setItem('wt_size',cupSize);}catch(e){}}
@@ -473,14 +473,22 @@ function copyCode(){
 async function saveRoomData(){
   if(!roomCode||!myId)return;
   try{
-    const existing=await loadRoomData();
-    let members=existing?existing.members.filter(m=>m.id!==myId):[];
+    // 先讀取現有資料，保留其他成員
+    let members=[];
+    try{
+      const r=await window.storage.get('wroom:'+roomCode,true);
+      if(r&&r.value){const d=JSON.parse(r.value);members=d.members||[];}
+    }catch(e){}
+    members=members.filter(m=>m.id!==myId);
     members.push({id:myId,name:myName,done:checked.filter(Boolean).length,total:totalCups,ts:Date.now()});
-    localStorage.setItem('room:'+roomCode,JSON.stringify({members,ts:Date.now()}));
-  }catch(e){}
+    await window.storage.set('wroom:'+roomCode,JSON.stringify({members,ts:Date.now()}),true);
+  }catch(e){console.error('saveRoomData error',e);}
 }
 async function loadRoomData(){
-  try{const r=localStorage.getItem('room:'+roomCode);return r?JSON.parse(r):null;}catch(e){return null;}
+  try{
+    const r=await window.storage.get('wroom:'+roomCode,true);
+    return r&&r.value?JSON.parse(r.value):null;
+  }catch(e){return null;}
 }
 async function pushMyStatus(){await saveRoomData();}
 async function pollRoom(){
